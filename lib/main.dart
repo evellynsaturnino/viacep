@@ -1,16 +1,45 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
 
 void main() {
-  runApp(const MainApp());
+  runApp(const MainFull());
 }
 
-class MainApp extends StatelessWidget {
-  const MainApp({super.key});
+class MainFull extends StatefulWidget {
+  const MainFull({super.key});
+
+  @override
+  State<MainFull> createState() => _MainApp();
+
+}
+
+class _MainApp extends State<MainFull> {
+  TextEditingController _controller = TextEditingController();
+  String _resultado = "";
+
+  Future<void> _buscar() async {
+    String url = "https://viacep.com.br/ws/"+_controller.text+"/json/";
+    http.Response resposta= await http.get(Uri.parse(url));
+    Map<String, dynamic> dados = jsonDecode(resposta.body);
+    
+    setState(() {
+      _resultado = dados["logradouro"]+"\n"+dados["bairro"]+"\n"+dados["localidade"]+"\n"+dados["uf"]
+    });
+    
+
+  }
 
   @override
   Widget build(BuildContext context) {
-    return const MaterialApp(
-      home: Scaffold(body: Center(child: Text('Hello World!'))),
+    return MaterialApp(
+      home: Scaffold(
+        appBar: AppBar(backgroundColor: Colors.pinkAccent, title: const Text('Consulta CEP')),
+        body: Column(children: [Text('Informe o CEP'),
+        TextField(),
+        ElevatedButton(child: Text('Buscar'), onPressed: _buscar,),
+        Text('Local: $_resultado')],)),
     );
   }
 }
